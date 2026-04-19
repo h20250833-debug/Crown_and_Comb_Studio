@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#121212" />
+<title>Crown and Comb Concierge Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  /* ===== MIDNIGHT LUXURY PALETTE ===== */
+  --bg:#121212;             /* Onyx Black */
+  --bg-soft:#171717;
+  --panel:#1E1E1E;          /* Soft Charcoal */
+  --panel-hi:#232323;
+  --panel-lo:#181818;
+  --panel-lo-2:#1C1C1C;
+  --text:#FAFAFA;           /* Crisp Off-White */
+  --text-soft:#A8A39B;
+  --text-dim:#6B665E;
+  --gold:#D4AF37;           /* True Gold */
+  --gold-hi:#EACB5F;
+  --gold-lo:#8C7320;
+  --champagne:#E0BFAB;      /* Luminous Champagne */
+  --champagne-dim:#AE9380;
+  --danger:#C76E6E;
+
+  /* ===== HAIRLINES (replace rim-light shadows) ===== */
+  --line:rgba(224,191,171,0.07);
+  --line-hi:rgba(224,191,171,0.14);
+  --line-gold:rgba(212,175,55,0.26);
+
+  /* ===== ELEVATION (one shadow, one direction) ===== */
+  --lift:
+    0 14px 36px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(224,191,171,0.035);
+  --lift-sm:
+    0 6px 18px rgba(0,0,0,0.42),
+    inset 0 1px 0 rgba(224,191,171,0.03);
+  --inset:
+    inset 0 2px 6px rgba(0,0,0,0.55);
+
+  /* ===== RADII ===== */
+  --r-xl:22px;
+  --r-lg:18px;
+  --r-md:14px;
+  --r-sm:10px;
+  --r-pill:999px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:16px;line-height:1.6;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* Unified ambient glow — ONE mood flowing across the whole page,
+   not a dozen per-card radials fighting each other */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -5%, rgba(212,175,55,0.09), transparent 58%),
+    radial-gradient(ellipse 60% 30% at 100% 35%, rgba(224,191,171,0.035), transparent 55%),
+    radial-gradient(ellipse 55% 30% at 0% 80%, rgba(212,175,55,0.028), transparent 55%);
+}
+
+.app{
+  position:relative;z-index:1;max-width:520px;margin:0 auto;
+  min-height:100vh;min-height:100dvh;
+  padding:24px 18px 40px;
+  display:flex;flex-direction:column;gap:16px;
+}
+
+/* ===== UTILITY SURFACES =====
+   Seamless approach: subtle gradient body, hairline border,
+   single directional shadow. No double neumorphic rim-light. */
+.raised{
+  background:linear-gradient(165deg, var(--panel-hi) 0%, var(--panel) 100%);
+  border:1px solid var(--line);
+  box-shadow:var(--lift);
+}
+.inset{
+  background:var(--panel-lo);
+  border:1px solid var(--line);
+  box-shadow:var(--inset);
+}
+
+/* ===== BRAND ===== */
+.brand{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:14px 18px;border-radius:var(--r-xl);
+}
+.brand-mark{
+  display:flex;align-items:center;gap:12px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px;font-weight:600;letter-spacing:.02em;
+  color:var(--text);
+}
+.crest{
+  width:16px;height:16px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle at 35% 35%, var(--gold-hi), var(--gold) 58%, var(--gold-lo) 100%);
+  box-shadow:0 0 14px rgba(212,175,55,0.35);
+}
+.brand-pill{
+  padding:7px 14px;border-radius:var(--r-pill);
+  color:var(--champagne);font-size:10px;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;white-space:nowrap;
+}
+
+/* ===== SCREENS ===== */
+.screen{display:none;animation:fadeUp .55s cubic-bezier(.22,.61,.36,1) both}
+.screen.active{display:flex;flex-direction:column;flex:1;gap:16px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:.5;transform:scale(.96)}50%{opacity:1;transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== HERO ===== */
+.hero-shell{
+  padding:28px 22px 24px;border-radius:var(--r-xl);
+  position:relative;overflow:hidden;
+}
+.hero-shell::after{
+  content:"";position:absolute;inset:auto -40px -40px auto;
+  width:160px;height:160px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle, rgba(212,175,55,0.08), transparent 70%);
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 14px;border-radius:var(--r-pill);
+  color:var(--gold);font-size:11px;font-weight:700;
+  letter-spacing:.22em;text-transform:uppercase;
+}
+.eyebrow::before{
+  content:"";width:6px;height:6px;border-radius:50%;
+  background:var(--gold);box-shadow:0 0 10px rgba(212,175,55,0.55);
+}
+.hero-shell h1{
+  margin:20px 0 14px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:48px;line-height:1;font-weight:600;letter-spacing:-.03em;
+  color:var(--text);
+}
+.hero-shell h1 em{color:var(--champagne);font-style:italic;font-weight:600}
+.lede{color:var(--text-soft);font-size:15px;margin-bottom:24px;max-width:400px;line-height:1.65}
+.lede strong{color:var(--text);font-weight:700}
+
+/* ===== BUTTONS — this is where Midnight Luxury earns its name =====
+   Primary CTAs filled with real gold gradient. Arrow inherits near-black
+   text color so the whole button reads as a single golden object. */
+.btn{
+  appearance:none;width:100%;border:0;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:17px 22px;border-radius:var(--r-lg);
+  font-family:inherit;font-size:15px;font-weight:700;letter-spacing:.01em;
+  transition:transform .2s ease, box-shadow .2s ease, filter .2s ease, border-color .2s ease;
+}
+.btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.05)}
+.btn:active:not(:disabled){transform:translateY(1px);filter:brightness(.96)}
+.btn:disabled{cursor:not-allowed;opacity:.5}
+
+.btn-primary,
+.btn-rust{
+  color:#1A1305;
+  background:linear-gradient(165deg, var(--gold-hi) 0%, var(--gold) 55%, var(--gold-lo) 100%);
+  border:1px solid rgba(255,226,130,0.3);
+  box-shadow:
+    0 12px 32px rgba(212,175,55,0.28),
+    inset 0 1px 0 rgba(255,240,180,0.5),
+    inset 0 -1px 0 rgba(90,66,8,0.4);
+}
+.btn-primary .btn-accent,
+.btn-rust .btn-accent{color:#1A1305;font-weight:800}
+
+.btn-wa{
+  color:var(--text);
+  background:linear-gradient(165deg, var(--panel-hi) 0%, var(--panel) 100%);
+  border:1px solid var(--line-hi);
+  box-shadow:var(--lift-sm);
+}
+.btn-wa:hover:not(:disabled){border-color:var(--line-gold)}
+.btn-wa svg{width:20px;height:20px;color:var(--gold)}
+
+.micro{
+  display:block;margin-top:12px;text-align:center;
+  color:var(--text-dim);font-size:12px;letter-spacing:.04em;
+}
+
+/* ===== QUIZ TOP ===== */
+.quiz-top{
+  padding:12px 14px;border-radius:var(--r-xl);
+  display:flex;align-items:center;gap:12px;
+}
+.back-btn{
+  width:44px;height:44px;border-radius:var(--r-md);
+  border:1px solid var(--line);cursor:pointer;flex-shrink:0;
+  color:var(--text);font-size:19px;
+  background:var(--panel-lo);
+  transition:background .2s ease, border-color .2s ease;
+}
+.back-btn:not(:disabled):hover{border-color:var(--line-hi);background:var(--panel-lo-2)}
+.back-btn:disabled{opacity:.4;cursor:not-allowed}
+
+.progress-wrap{flex:1}
+.progress-label{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;margin-bottom:8px;
+  font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gold);
+}
+.progress-label .counter{color:var(--text-soft);letter-spacing:.14em}
+.progress-bar{
+  height:6px;border-radius:var(--r-pill);overflow:hidden;
+  background:var(--panel-lo);
+  border:1px solid var(--line);
+}
+.progress-fill{
+  height:100%;width:0%;border-radius:var(--r-pill);
+  background:linear-gradient(90deg, var(--gold-lo) 0%, var(--gold) 52%, var(--gold-hi) 100%);
+  box-shadow:0 0 14px rgba(212,175,55,0.42);
+  transition:width .45s cubic-bezier(.22,.61,.36,1);
+}
+
+/* ===== QUESTION CARD ===== */
+.question-card{
+  border-radius:var(--r-xl);padding:26px 22px 22px;
+}
+.question-meta{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:18px;
+}
+.stage-pill{
+  padding:7px 12px;border-radius:var(--r-pill);
+  color:var(--gold);font-size:10px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;
+}
+.stage-note{
+  color:var(--text-dim);font-size:10px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;
+}
+.q-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:38px;line-height:1.03;font-weight:600;letter-spacing:-.025em;
+  margin-bottom:10px;color:var(--text);
+}
+.q-sub{color:var(--text-soft);font-size:14px;margin-bottom:20px;line-height:1.6}
+
+/* ===== OPTIONS =====
+   Subtler than before — hairline border instead of heavy shadow.
+   Selected state uses a soft gold wash + gold border, not a shadow change. */
+.option-grid{display:grid;gap:10px}
+.opt{
+  width:100%;cursor:pointer;text-align:left;
+  display:flex;align-items:flex-start;gap:14px;
+  padding:16px;border-radius:var(--r-lg);
+  color:var(--text);
+  background:var(--panel-lo);
+  border:1px solid var(--line);
+  transition:border-color .2s ease, background .2s ease, transform .15s ease;
+}
+.opt:hover{border-color:var(--line-hi);background:var(--panel-lo-2)}
+.opt:active{transform:scale(.99)}
+.opt.selected{
+  border-color:var(--line-gold);
+  background:linear-gradient(165deg, rgba(212,175,55,0.07), rgba(212,175,55,0.02));
+}
+.opt.selected .option-copy strong{color:var(--gold)}
+
+.ico{
+  width:44px;height:44px;border-radius:var(--r-md);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  color:var(--text-soft);font-size:18px;
+  background:var(--bg);
+  border:1px solid var(--line);
+  transition:color .2s ease, border-color .2s ease, background .2s ease;
+}
+.opt.selected .ico{
+  color:var(--gold);
+  border-color:var(--line-gold);
+  background:rgba(212,175,55,0.06);
+}
+.option-copy strong{
+  display:block;font-size:15px;font-weight:700;margin-bottom:3px;
+  transition:color .2s ease;
+}
+.option-copy small{
+  display:block;color:var(--text-soft);font-size:12.5px;line-height:1.55;
+}
+
+/* ===== ANALYZING ===== */
+.analyzing-shell{
+  padding:48px 24px;border-radius:var(--r-xl);
+  text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;
+}
+.scan-orb{
+  width:96px;height:96px;border-radius:50%;
+  position:relative;margin-bottom:30px;
+  background:conic-gradient(from 180deg,
+    transparent 0%,
+    rgba(212,175,55,0.06) 18%,
+    rgba(212,175,55,0.38) 46%,
+    var(--gold-hi) 52%,
+    rgba(212,175,55,0.38) 58%,
+    rgba(212,175,55,0.06) 82%,
+    transparent 100%);
+  animation:spin 2.2s linear infinite;
+}
+.scan-orb::before{
+  content:"";position:absolute;inset:3px;border-radius:50%;
+  background:var(--panel);
+  border:1px solid var(--line);
+}
+.scan-orb::after{
+  content:"";position:absolute;inset:30px;border-radius:50%;
+  background:radial-gradient(circle, rgba(212,175,55,0.5), rgba(212,175,55,0));
+  animation:pulse 1.6s ease infinite;
+}
+.analyzing-shell h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:36px;line-height:1.05;font-weight:600;margin-bottom:8px;
+}
+.analyzing-shell .step{
+  color:var(--text-soft);font-size:14px;animation:pulse 1.5s ease infinite;
+}
+
+/* ===== PROFILE CARD ===== */
+.profile-card{
+  border-radius:var(--r-xl);padding:28px 22px;
+  position:relative;overflow:hidden;
+}
+.profile-card::after{
+  content:"";position:absolute;inset:auto -30px -40px auto;
+  width:140px;height:140px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle, rgba(212,175,55,0.14), transparent 70%);
+}
+.profile-card .kicker{
+  color:var(--gold);font-size:10px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;margin-bottom:12px;
+}
+.profile-card h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:36px;line-height:1;font-weight:600;margin-bottom:10px;
+  position:relative;
+}
+.profile-card h2 em{color:var(--champagne);font-style:italic}
+.profile-card p{color:var(--text-soft);font-size:14px;max-width:380px;line-height:1.65;position:relative}
+
+/* ===== ROUTE CARD ===== */
+.route-card{padding:16px 18px;border-radius:var(--r-lg)}
+.route-label{
+  color:var(--gold);font-size:10px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;margin-bottom:12px;
+}
+.route-chips{display:flex;flex-wrap:wrap;gap:6px}
+.path-chip{
+  padding:7px 12px;border-radius:var(--r-pill);
+  color:var(--text-soft);font-size:11px;font-weight:700;letter-spacing:.02em;
+  background:var(--bg);
+  border:1px solid var(--line);
+}
+.path-chip.active{color:var(--champagne);border-color:var(--line-gold)}
+
+/* ===== UNLOCK CARD ===== */
+.unlock-card{padding:24px 22px;border-radius:var(--r-xl)}
+.unlock-card .top{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;
+}
+.unlock-card .badge{
+  padding:7px 11px;border-radius:var(--r-pill);
+  color:var(--gold);font-size:10px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;
+}
+.unlock-card .hintline{color:var(--text-soft);font-size:12px;font-weight:600}
+.unlock-card h3{
+  font-family:'Cormorant Garamond',serif;
+  font-size:30px;line-height:1.06;font-weight:600;margin-bottom:8px;
+}
+.unlock-card .sub{color:var(--text-soft);font-size:14px;margin-bottom:18px;line-height:1.6}
+
+/* ===== FIELDS ===== */
+.field{margin-bottom:14px}
+.field label{
+  display:block;margin-bottom:8px;
+  color:var(--gold);font-size:10px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;
+}
+.field input{
+  width:100%;outline:none;
+  padding:15px 16px;border-radius:var(--r-md);
+  background:var(--panel-lo);
+  border:1px solid var(--line);
+  color:var(--text);font:600 15px/1.2 inherit;
+  transition:border-color .2s ease, background .2s ease;
+}
+.field input::placeholder{color:var(--text-dim);font-weight:500}
+.field input:focus{border-color:var(--line-gold);background:var(--panel-lo-2)}
+.field input.error{border-color:rgba(199,110,110,0.55)}
+.field .hint{margin-top:7px;color:var(--text-dim);font-size:11px}
+
+.phone-wrap{position:relative}
+.phone-wrap .prefix{
+  position:absolute;left:16px;top:50%;transform:translateY(-50%);
+  color:var(--gold);font-weight:700;font-size:15px;pointer-events:none;
+}
+.phone-wrap input{padding-left:48px}
+
+.trust-ticks{
+  display:flex;flex-wrap:wrap;gap:8px 14px;margin:14px 0;
+  color:var(--text-soft);font-size:12px;font-weight:600;
+}
+.trust-ticks span{display:inline-flex;align-items:center;gap:6px}
+.trust-ticks .check{
+  width:16px;height:16px;border-radius:50%;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:rgba(212,175,55,0.12);border:1px solid var(--line-gold);
+  color:var(--gold);font-weight:800;font-size:10px;
+}
+
+/* ===== RESULT ===== */
+.result-hello{
+  font-family:'Cormorant Garamond',serif;
+  font-size:36px;line-height:1.05;font-weight:600;color:var(--text);
+}
+.result-hello em{color:var(--champagne);font-style:italic}
+.result-date{
+  color:var(--text-soft);font-size:10px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;
+}
+
+.diagnosis{padding:22px;border-radius:var(--r-lg)}
+.diagnosis .ttl{
+  color:var(--gold);font-size:10px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px;
+}
+.diagnosis p{color:var(--text-soft);font-size:14.5px;line-height:1.7}
+
+.section-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px;font-weight:600;line-height:1.05;color:var(--text);
+  display:flex;align-items:center;gap:12px;
+}
+.section-title .num{
+  color:var(--gold);font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:11px;font-weight:800;letter-spacing:.22em;
+}
+
+.service{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:18px;border-radius:var(--r-lg);margin-bottom:10px;
+}
+.service .sv-ico{
+  width:46px;height:46px;border-radius:var(--r-md);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  color:var(--gold);font-size:20px;
+  background:var(--bg);border:1px solid var(--line-gold);
+}
+.service h4{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.service p{color:var(--text-soft);font-size:13px;line-height:1.6}
+.service .price{
+  display:inline-block;margin-top:10px;
+  color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.04em;
+}
+
+/* ===== COUPON ===== */
+.coupon{
+  padding:26px 22px;border-radius:var(--r-xl);
+  position:relative;overflow:hidden;
+}
+.coupon::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(135deg, rgba(212,175,55,0.09) 0%, transparent 50%);
+}
+.coupon::after{
+  content:"";position:absolute;inset:auto -28px -32px auto;
+  width:120px;height:120px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle, rgba(212,175,55,0.24), transparent 68%);
+}
+.coupon .c-top{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:14px;margin-bottom:14px;position:relative;
+}
+.coupon .c-label{
+  color:var(--gold);font-size:10px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;padding-top:10px;
+}
+.coupon .c-off{
+  font-family:'Cormorant Garamond',serif;
+  font-size:52px;font-weight:700;line-height:.9;color:var(--text);
+}
+.coupon .c-off small{
+  font-size:18px;vertical-align:12px;margin-left:3px;color:var(--gold);
+}
+.coupon .c-desc{
+  color:var(--text-soft);font-size:13px;line-height:1.6;margin-bottom:16px;
+  position:relative;
+}
+.coupon .c-code{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 8px 8px 16px;border-radius:var(--r-md);margin-bottom:14px;
+  position:relative;
+}
+.coupon .c-code code{
+  flex:1;color:var(--gold);
+  font-family:'Plus Jakarta Sans',monospace;
+  font-size:17px;font-weight:800;letter-spacing:.22em;
+}
+.copy-btn{
+  border:0;border-radius:var(--r-sm);padding:10px 14px;cursor:pointer;
+  color:#1A1305;font-family:inherit;font-size:12px;font-weight:800;letter-spacing:.04em;
+  background:linear-gradient(165deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
+  box-shadow:
+    0 4px 12px rgba(212,175,55,0.32),
+    inset 0 1px 0 rgba(255,240,180,0.5);
+  transition:filter .2s ease, transform .15s ease;
+}
+.copy-btn:hover{filter:brightness(1.06)}
+.copy-btn:active{transform:translateY(1px)}
+.copy-btn.done{
+  background:var(--panel-lo);color:var(--gold);
+  box-shadow:none;border:1px solid var(--line-gold);
+}
+
+.coupon .c-timer{
+  display:flex;align-items:center;gap:8px;position:relative;
+  color:var(--text-soft);font-size:12px;font-weight:700;
+}
+.coupon .c-timer .pulse{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  background:var(--gold);box-shadow:0 0 10px rgba(212,175,55,0.5);
+  animation:pulse 1.2s ease infinite;
+}
+.coupon .c-timer strong{color:var(--text);font-weight:800}
+
+.share-note{
+  text-align:center;color:var(--text-soft);font-size:13px;margin-top:4px;
+}
+.share-note a{
+  color:var(--gold);cursor:pointer;font-weight:700;text-decoration:none;
+  border-bottom:1px solid var(--line-gold);padding-bottom:1px;
+}
+
+footer{
+  text-align:center;color:var(--text-dim);font-size:10px;
+  letter-spacing:.22em;text-transform:uppercase;padding-top:10px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:420px){
+  .app{padding:18px 14px 34px}
+  .brand{padding:12px 14px}
+  .brand-mark{font-size:24px}
+  .hero-shell{padding:24px 18px 20px}
+  .hero-shell h1{font-size:40px}
+  .q-title{font-size:34px}
+  .analyzing-shell h2{font-size:32px}
+  .profile-card h2{font-size:32px}
+  .result-hello{font-size:32px}
+  .unlock-card h3{font-size:26px}
+  .coupon .c-off{font-size:46px}
+  .section-title{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header class="brand raised">
+    <div class="brand-mark">
+      <span class="crest"></span>
+      <span>Crown and Comb</span>
+    </div>
+    <span class="brand-pill inset">Private Rituals</span>
+  </header>
+
+  <section class="screen active" id="screen-hero">
+    <div class="hero-shell raised">
+      <div class="eyebrow inset">Concierge Builder</div>
+      <h1>Build a sharper beauty and wellness route, <em>your way.</em></h1>
+      <p class="lede">This version is not a typical salon quiz. You choose the lane, set the treatment mood, define your cadence, and we build a private ritual around <strong>how you actually want to book.</strong></p>
+      <button class="btn btn-primary" type="button" onclick="startQuiz()">
+        Begin the concierge flow <span class="btn-accent">&rarr;</span>
+      </button>
+
+      <!-- <div class="hero-grid">
+        
+        <div class="signal-card inset">
+          <div class="sig-icon raised">&#10027;</div>
+          <h3>Hair track</h3>
+          <p>Repair, scalp reset, fallout control, and polished finish plans.</p>
+        </div>
+        <div class="signal-card inset">
+          <div class="sig-icon raised">&#10022;</div>
+          <h3>Skin track</h3>
+          <p>Clarity, glow, barrier recovery, and clinical brightening routes.</p>
+        </div>
+        <div class="signal-card inset">
+          <div class="sig-icon raised">&#10041;</div>
+          <h3>Body track</h3>
+          <p>Stress release, neck relief, deep recovery, and nervous-system rest.</p>
+        </div>
+      </div>
+
+      <!-- <div class="workflow-band inset">
+        <div class="workflow-step"><span class="inset">01</span>Pick your lane</div>
+        <div class="workflow-step"><span class="inset">02</span>Choose your priority</div>
+        <div class="workflow-step"><span class="inset">03</span>Set the treatment mood</div>
+        <div class="workflow-step"><span class="inset">04</span>Define cadence and session size</div>
+      </div> -->
+
+      
+      <span class="micro">5 deliberate stages &middot; No signup required to start</span>
+    </div> 
+  </section>
+
+  <section class="screen" id="screen-quiz">
+    <div class="quiz-top raised">
+      <button class="back-btn" type="button" id="backBtn" onclick="goBack()">&larr;</button>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span id="stageLabel">Stage 01</span>
+          <span class="counter" id="stepCounter">1 / 5</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </div>
+
+    <div class="question-card raised" id="qBody"></div>
+  </section>
+
+  <section class="screen" id="screen-analyzing">
+    <div class="analyzing-shell raised">
+      <div class="scan-orb"></div>
+      <h2>Calibrating your route...</h2>
+      <p class="step" id="analyzingStep">Reading your selections...</p>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-preview">
+    <div class="unlock-card raised">
+      <div class="top">
+        <span class="badge inset">30% Off</span>
+        <span class="hintline">unlock the full plan instantly</span>
+      </div>
+      <h3>Your full plan is ready. Where should we send it?</h3>
+      <p class="sub">Enter your name and WhatsApp number to unlock your diagnosis, recommended services, and booking offer.</p>
+
+      <div class="field">
+        <label for="nameInput">Your Name</label>
+        <input type="text" id="nameInput" placeholder="e.g. Priya" autocomplete="given-name" />
+      </div>
+
+      <div class="field">
+        <label for="phoneInput">WhatsApp Number</label>
+        <div class="phone-wrap">
+          <span class="prefix">+91</span>
+          <input type="tel" id="phoneInput" maxlength="10" inputmode="numeric" placeholder="98765 43210" autocomplete="tel-national" />
+        </div>
+        <div class="hint">Used only for your plan, coupon, and booking follow-up.</div>
+      </div>
+
+      <div class="trust-ticks">
+        <span><span class="check">&#10003;</span> No spam</span>
+        <span><span class="check">&#10003;</span> No marketing calls</span>
+        <span><span class="check">&#10003;</span> Just your plan and offer</span>
+      </div>
+
+      <button class="btn btn-rust" type="button" onclick="submitLead()" id="submitBtn">
+        Unlock my plan + 30% off <span class="btn-accent">&rarr;</span>
+      </button>
+      <span class="micro">Offer valid for 48 hours after unlock</span>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-result">
+    <h2 class="result-hello">Hi <em id="userNameOut">there</em> - here is the route your care choices built.</h2>
+    <p class="result-date" id="resultDate"></p>
+
+    <div class="profile-card raised">
+      <div class="kicker">Your Concierge Match</div>
+      <h2 id="profileNameFull">The Signature Route</h2>
+      <p id="profileTaglineFull">-</p>
+    </div>
+
+    <div class="route-card inset">
+      <div class="route-label">Your route summary</div>
+      <div class="route-chips" id="routeSummaryFull"></div>
+    </div>
+
+    <div class="diagnosis inset">
+      <div class="ttl">Why this was matched to you</div>
+      <p id="diagnosisText">-</p>
+    </div>
+
+    <h3 class="section-title"><span class="num">01</span>Your recommended services</h3>
+    <div id="servicesList"></div>
+
+    <div class="coupon raised">
+      <div class="c-top">
+        <span class="c-label">Private welcome offer</span>
+        <span class="c-off">30<small>%</small></span>
+      </div>
+      <div class="c-desc">Use this one-time code on WhatsApp or in the salon when you book your first recommended session.</div>
+      <div class="c-code inset">
+        <code id="couponCode">ROUTE30XXXX</code>
+        <button class="copy-btn" type="button" id="copyBtn" onclick="copyCoupon()">Copy</button>
+      </div>
+      <div class="c-timer">
+        <span class="pulse"></span>
+        <span>Expires in <strong id="countdown">47h 59m</strong></span>
+      </div>
+    </div>
+
+    <button class="btn btn-wa" type="button" onclick="openWhatsApp()">
+      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+      Send route to WhatsApp
+    </button>
+    <span class="micro">Most bookings get a reply within the hour</span>
+
+    <div class="share-note">
+      Know someone who would love this? <a onclick="shareResult()">Share the flow</a>
+    </div>
+
+    <footer>Copyright Crown and Comb &middot; Private route builder</footer>
+  </section>
+
+</div>
+
+<script>
+const PRIORITY_OPTIONS = {
+  hair: [
+    { value: "shedding", label: "Shedding and thinning", desc: "Hair fall, weak roots, and reduced density are top of mind.", ico: "&#8593;" },
+    { value: "repair", label: "Frizz, dryness, and damage", desc: "You want softer texture, strength, and a more polished finish.", ico: "&#10027;" },
+    { value: "scalp", label: "Scalp balance and detox", desc: "Buildup, dandruff, itchiness, or oily roots are the real problem.", ico: "&#10022;" },
+    { value: "shine", label: "Flat hair and no shine", desc: "Your hair feels lifeless and needs movement, bounce, and gloss.", ico: "&#10041;" }
+  ],
+  skin: [
+    { value: "clarity", label: "Breakouts and congestion", desc: "Pores, texture, active acne, or repeated flare-ups need control.", ico: "&#9679;" },
+    { value: "bright", label: "Dullness and pigmentation", desc: "You want a brighter tone and less visible tan or dark marks.", ico: "&#10023;" },
+    { value: "barrier", label: "Sensitivity and dehydration", desc: "Your skin needs calm, hydration, and barrier-safe correction.", ico: "&#10084;" },
+    { value: "glow", label: "Event-ready glow", desc: "You want your face to look polished, rested, and expensive fast.", ico: "&#10024;" }
+  ],
+  body: [
+    { value: "desk", label: "Neck and shoulder tension", desc: "Desk posture, phone strain, and upper-body tightness need release.", ico: "&#8613;" },
+    { value: "stress", label: "Stress and poor sleep", desc: "You want a session that settles the body and turns the mind down.", ico: "&#9790;" },
+    { value: "release", label: "Deep body tightness", desc: "You need firm pressure and deeper muscular release.", ico: "&#8595;" },
+    { value: "fatigue", label: "Low energy and heaviness", desc: "Your body feels loaded, tired, and in need of a full reset.", ico: "&#10050;" }
+  ]
+};
+
+const QUESTIONS = [
+  {
+    key: "lane",
+    stage: "Stage 01",
+    q: "Which care lane are we building today?",
+    sub: "Pick the lane you want to prioritise first. The rest of the route will adapt around it.",
+    options: [
+      { value: "hair", label: "Hair therapy", desc: "Scalp health, fallout control, repair, and finished texture.", ico: "&#10027;" },
+      { value: "skin", label: "Skin correction", desc: "Clarity, glow, brightening, hydration, and barrier recovery.", ico: "&#10022;" },
+      { value: "body", label: "Body wellness", desc: "Stress relief, tension work, recovery, and relaxation therapy.", ico: "&#10041;" }
+    ]
+  },
+  {
+    key: "priority",
+    stage: "Stage 02",
+    q: answers => {
+      const lane = answers.lane?.value || "hair";
+      if(lane === "hair") return "What needs the most attention first?";
+      if(lane === "skin") return "What are you trying to correct first?";
+      return "What do you want this session to relieve first?";
+    },
+    sub: answers => {
+      const lane = answers.lane?.value || "hair";
+      if(lane === "hair") return "This tells us whether your route should target roots, texture, scalp, or finish.";
+      if(lane === "skin") return "This sets the clinical intensity and the treatment direction.";
+      return "This tells us whether the route should calm your system or go deeper into the body.";
+    },
+    options: answers => PRIORITY_OPTIONS[answers.lane?.value || "hair"]
+  },
+  {
+    key: "approach",
+    stage: "Stage 03",
+    q: "What treatment mood feels right?",
+    sub: "This changes the feel of the plan - from fast-track correction to a slower luxury ritual.",
+    options: [
+      { value: "fast", label: "Fast visible results", desc: "I want the route that gets me to change the quickest.", ico: "&#9889;" },
+      { value: "gentle", label: "Gentle but effective", desc: "I want progress without anything that feels too aggressive.", ico: "&#10084;" },
+      { value: "ritual", label: "Luxury ritual experience", desc: "I want the process to feel indulgent, restorative, and premium.", ico: "&#10024;" },
+      { value: "deep", label: "Root-cause or deep-work mode", desc: "I am open to the stronger or more technical path if it works.", ico: "&#10022;" }
+    ]
+  },
+  {
+    key: "cadence",
+    stage: "Stage 04",
+    q: "How do you want this to fit into real life?",
+    sub: "Be honest. The best plan is the one you will actually book and repeat.",
+    options: [
+      { value: "single", label: "One strong reset for now", desc: "I mainly want one really good session and then I will reassess.", ico: "&#9675;" },
+      { value: "monthly", label: "A monthly ritual", desc: "I can come in once a month if the plan makes sense.", ico: "&#9711;" },
+      { value: "routine", label: "I want a proper routine", desc: "I am open to coming in regularly for visible cumulative change.", ico: "&#9681;" },
+      { value: "urgent", label: "Build the fastest path", desc: "I want the smartest path to faster results, even if it is more structured.", ico: "&#8593;" }
+    ]
+  },
+  {
+    key: "session",
+    stage: "Stage 05",
+    q: "What sort of session window suits you best?",
+    sub: "This changes whether the first recommendation leans express, signature, or immersive.",
+    options: [
+      { value: "express", label: "Express 40 to 45 minutes", desc: "Quick, efficient, and easy to fit into a busy day.", ico: "&#9719;" },
+      { value: "signature", label: "Signature 60 to 75 minutes", desc: "Balanced, effective, and the best all-round first appointment.", ico: "&#10033;" },
+      { value: "immersive", label: "Immersive 90 minutes plus", desc: "Make it a real ritual. I want the most complete experience.", ico: "&#10050;" }
+    ]
+  }
+];
+
+const SERVICES = {
+  scalp_detox:       { name: "Scalp Detox Therapy",          desc: "Deep-cleans buildup, balances oil, and clears the root environment.", price: "from &#8377;1,499", ico: "&#10022;" },
+  hairfall_therapy:  { name: "Anti-Hair Fall Treatment",     desc: "Targeted serum and massage protocol designed for weak roots.",      price: "from &#8377;1,999", ico: "&#8593;" },
+  hair_spa:          { name: "Moisture-Lock Hair Spa",       desc: "Rehydrates dry lengths and improves softness fast.",               price: "from &#8377;899",   ico: "&#10041;" },
+  keratin:           { name: "Keratin Smoothening",          desc: "Polishes frizz and creates a cleaner, sleeker finish.",            price: "from &#8377;3,500", ico: "&#10024;" },
+  hair_botox:        { name: "Hair Botox Repair",            desc: "Rebuilds damaged hair from within the strand.",                    price: "from &#8377;2,799", ico: "&#10084;" },
+  scalp_rejuvenation:{ name: "Scalp Rejuvenation Therapy",   desc: "Stimulates the scalp and supports thicker-looking regrowth.",      price: "from &#8377;2,299", ico: "&#9673;" },
+  deep_nourishment:  { name: "Deep Nourishment Hair Ritual", desc: "A richer repair treatment for chemically stressed hair.",          price: "from &#8377;1,299", ico: "&#10047;" },
+  head_massage:      { name: "Indian Head Massage",          desc: "Pressure-point scalp and neck massage for circulation and calm.",  price: "from &#8377;799",   ico: "&#10026;" },
+  deep_cleansing_facial:{ name: "Deep Cleansing Facial",     desc: "Clears congestion, resets oil flow, and refines the surface.",     price: "from &#8377;1,499", ico: "&#9679;" },
+  anti_acne_cleanup: { name: "Anti-Acne Clean-up",           desc: "A lighter but effective clean-up for recurring breakouts.",        price: "from &#8377;1,099", ico: "&#9679;" },
+  hydra_glow:        { name: "Hydra Glow Facial",            desc: "Deep hydration with a polished finish and no downtime.",           price: "from &#8377;1,799", ico: "&#10024;" },
+  oxygen_facial:     { name: "Soothing Oxygen Facial",       desc: "Calms stressed skin and supports barrier recovery.",               price: "from &#8377;1,699", ico: "&#10084;" },
+  detan:             { name: "De-Tan and Brightening Facial",desc: "Lifts surface dullness and helps the complexion read clearer.",    price: "from &#8377;1,499", ico: "&#9728;" },
+  chem_peel:         { name: "Brightening Chemical Peel",    desc: "Pushes renewal faster for pigmentation, texture, and dullness.",  price: "from &#8377;2,200", ico: "&#10023;" },
+  pigmentation_tx:   { name: "Pigmentation Treatment",       desc: "Targets deeper-set dark marks that facials alone cannot shift.",  price: "from &#8377;2,500", ico: "&#9671;" },
+  oil_control:       { name: "Oil-Control Clean-up",         desc: "Balances overactive skin without leaving it stripped.",            price: "from &#8377;1,299", ico: "&#9673;" },
+  relaxation_spa:    { name: "Relaxation Body Spa",          desc: "A full-body nervous-system reset designed to slow everything down.", price: "from &#8377;2,499", ico: "&#10084;" },
+  aromatherapy:      { name: "Aromatherapy Massage",         desc: "Essential-oil massage focused on stress, breath, and sleep quality.", price: "from &#8377;2,199", ico: "&#10047;" },
+  deep_tissue:       { name: "Deep Tissue Massage",          desc: "Firm-pressure work for stubborn knots and muscular tension.",     price: "from &#8377;2,399", ico: "&#8595;" },
+  swedish:           { name: "Swedish Full-Body Massage",    desc: "Balanced pressure and circulation support for an easy reset.",    price: "from &#8377;2,099", ico: "&#10041;" },
+  neck_shoulder:     { name: "Neck and Shoulder Therapy",    desc: "Targeted desk-stress relief in a shorter focused session.",       price: "from &#8377;1,299", ico: "&#8613;" }
+};
+
+const PROFILES = {
+  hair_root_revival: {
+    name: "The <em>Root</em> Revival",
+    tagline: "Built for hair that needs less guesswork and more root-level support.",
+    diagnosis: "You chose a hair-first route with a clear focus on fallout and density, which usually means the scalp environment and follicle support matter more than another styling product ever will. When shedding is the priority, the route has to start lower - at the scalp - rather than only making the hair look smoother on the surface.",
+    services: ["scalp_detox", "hairfall_therapy", "scalp_rejuvenation"]
+  },
+  hair_velvet_repair: {
+    name: "The <em>Velvet</em> Repair",
+    tagline: "A repair route for hair that wants softness, structure, and less chaos.",
+    diagnosis: "You signalled a texture problem rather than a root problem - dryness, frizz, damage, or over-processing. That means your route needs rebuilding and moisture layering, not just shine on top. When this kind of hair gets the right repair sequence, it stops fighting you every morning.",
+    services: ["hair_botox", "deep_nourishment", "keratin"]
+  },
+  hair_scalp_reset: {
+    name: "The <em>Scalp</em> Reset",
+    tagline: "For hair that is misbehaving because the scalp is overloaded.",
+    diagnosis: "A scalp-heavy priority changes everything. It points to buildup, imbalance, itchiness, or an oil pattern that keeps disrupting the hair above it. In these cases, a cleaner scalp almost always makes the hair easier to manage before any smoothing or styling service even enters the picture.",
+    services: ["scalp_detox", "head_massage", "hair_spa"]
+  },
+  hair_polish_protocol: {
+    name: "The <em>Polish</em> Protocol",
+    tagline: "For flat, dull hair that needs life, gloss, and shape back.",
+    diagnosis: "You are not chasing deep correction as much as visible finish - movement, gloss, and better behaviour. That means the route can prioritise polish, hydration, and controlled smoothing. The result is hair that reads healthier immediately and behaves better between visits.",
+    services: ["hair_spa", "keratin", "head_massage"]
+  },
+  skin_clarity_code: {
+    name: "The <em>Clarity</em> Code",
+    tagline: "A breakout-control route with enough structure to actually work.",
+    diagnosis: "When the priority is congestion, breakouts, and visible texture, the route has to favour clearing and control over softness-first treatments. That does not mean being harsh - it means choosing facials and clean-ups that clear the surface while keeping future flare-ups from being triggered by over-treatment.",
+    services: ["deep_cleansing_facial", "anti_acne_cleanup", "oil_control"]
+  },
+  skin_luminous_repair: {
+    name: "The <em>Luminous</em> Repair",
+    tagline: "Built to brighten the skin without making it feel overworked.",
+    diagnosis: "Your selections point toward tone correction - dullness, tan, unevenness, or pigmentation. Those issues respond best when the route alternates visible brightening with controlled renewal, so the change is not just immediate but cumulative over the next visits as well.",
+    services: ["detan", "hydra_glow", "pigmentation_tx"]
+  },
+  skin_barrier_rescue: {
+    name: "The <em>Barrier</em> Rescue",
+    tagline: "For skin that wants calm, hydration, and intelligent correction.",
+    diagnosis: "Sensitive or dehydrated skin needs a smarter route, not a softer one. Your choices suggest skin that would improve fastest when the barrier is respected and rebuilt first. Once that foundation is stable, glow and clarity usually follow much more naturally.",
+    services: ["oxygen_facial", "hydra_glow", "detan"]
+  },
+  skin_event_polish: {
+    name: "The <em>Event</em> Polish",
+    tagline: "A polished-skin route for people who want their face to look expensive fast.",
+    diagnosis: "You selected a glow-first outcome, which means the route can focus on finish, hydration, and intelligent brightening rather than heavy correction. This is the kind of plan that makes skin look rested, smoother, and more refined quickly, especially before an event or important week.",
+    services: ["hydra_glow", "detan", "oxygen_facial"]
+  },
+  body_desk_release: {
+    name: "The <em>Desk</em> Release",
+    tagline: "A body route built for screens, posture, and upper-body accumulation.",
+    diagnosis: "Your route points to concentrated tension rather than general tiredness. That usually means the upper back, neck, shoulders, and scalp are carrying more strain than the rest of the body. A focused treatment path works better here than a purely relaxing session because it targets where your day is actually landing.",
+    services: ["neck_shoulder", "deep_tissue", "head_massage"]
+  },
+  body_nervous_reset: {
+    name: "The <em>Nervous</em> Reset",
+    tagline: "For the person who does not just need a massage - they need their system turned down.",
+    diagnosis: "When stress and sleep are the headline issue, the best route is not automatically the deepest pressure. It is the one that gets your breathing slower, your muscles less guarded, and your nervous system less reactive. That is why this path leans restorative before it leans forceful.",
+    services: ["aromatherapy", "relaxation_spa", "swedish"]
+  },
+  body_deep_release: {
+    name: "The <em>Deep</em> Release",
+    tagline: "For a body that needs stronger hands and more decisive relief.",
+    diagnosis: "Your selections clearly favour depth over softness. That usually means knots, tight fascia, and fatigue sitting deeper than a standard relaxation massage can reach. A stronger route makes sense here, especially if you already know you do not leave lighter after gentler work.",
+    services: ["deep_tissue", "neck_shoulder", "relaxation_spa"]
+  },
+  body_energy_reboot: {
+    name: "The <em>Energy</em> Reboot",
+    tagline: "For the body that feels heavy, flat, and overdue for circulation.",
+    diagnosis: "Heaviness and fatigue usually signal that the body needs better movement, circulation, and recovery rather than just a soft rest. The most effective route is one that gets energy moving again while still giving the nervous system a chance to settle and recover properly.",
+    services: ["swedish", "aromatherapy", "relaxation_spa"]
+  }
+};
+
+let state = {
+  step: 0,
+  answers: {},
+  profile: null,
+  coupon: null,
+  user: { name: "", phone: "" }
+};
+let autoAdvanceTimer = null;
+
+function show(screenId){
+  document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function startQuiz(){
+  clearTimeout(autoAdvanceTimer);
+  state.step = 0;
+  state.answers = {};
+  state.profile = null;
+  renderQuestion();
+  show('screen-quiz');
+}
+
+function getQuestionConfig(stepIndex = state.step){
+  const config = QUESTIONS[stepIndex];
+  return {
+    ...config,
+    qText: typeof config.q === 'function' ? config.q(state.answers) : config.q,
+    subText: typeof config.sub === 'function' ? config.sub(state.answers) : config.sub,
+    resolvedOptions: typeof config.options === 'function' ? config.options(state.answers) : config.options
+  };
+}
+
+function renderQuestion(){
+  const config = getQuestionConfig();
+  const selected = state.answers[config.key]?.value;
+
+  document.getElementById('stageLabel').textContent = config.stage;
+  document.getElementById('stepCounter').textContent = `${state.step + 1} / ${QUESTIONS.length}`;
+  document.getElementById('progressFill').style.width = `${((state.step + 1) / QUESTIONS.length) * 100}%`;
+  document.getElementById('backBtn').disabled = state.step === 0;
+
+  const optionsHtml = config.resolvedOptions.map(option => `
+    <button class="opt ${selected === option.value ? 'selected' : ''}" type="button" onclick="selectOption('${config.key}','${option.value}','${escapeAttr(option.label)}')">
+      <span class="ico">${option.ico}</span>
+      <span class="option-copy">
+        <strong>${option.label}</strong>
+        <small>${option.desc}</small>
+      </span>
+    </button>
+  `).join('');
+
+  document.getElementById('qBody').innerHTML = `
+    <div class="question-meta">
+      <span class="stage-pill inset">${config.stage}</span>
+      <span class="stage-note">Concierge decision point</span>
+    </div>
+    <h2 class="q-title">${config.qText}</h2>
+    <p class="q-sub">${config.subText}</p>
+    <div class="option-grid">${optionsHtml}</div>
+    <span class="micro">Tap one option and we will move you straight to the next stage.</span>
+  `;
+}
+
+function selectOption(key, value, label){
+  const stepIndex = QUESTIONS.findIndex(question => question.key === key);
+  QUESTIONS.slice(stepIndex + 1).forEach(question => delete state.answers[question.key]);
+  state.answers[key] = { value, label };
+  renderQuestion();
+  clearTimeout(autoAdvanceTimer);
+  autoAdvanceTimer = setTimeout(() => {
+    if(state.step < QUESTIONS.length - 1){
+      state.step++;
+      renderQuestion();
+    } else {
+      matchProfile();
+      analyze();
+    }
+  }, 220);
+}
+
+function goBack(){
+  clearTimeout(autoAdvanceTimer);
+  if(state.step === 0) return;
+  state.step--;
+  renderQuestion();
+}
+
+function matchProfile(){
+  const lane = state.answers.lane?.value;
+  const priority = state.answers.priority?.value;
+  const approach = state.answers.approach?.value;
+  const cadence = state.answers.cadence?.value;
+  const session = state.answers.session?.value;
+
+  let key = 'hair_polish_protocol';
+
+  if(lane === 'hair'){
+    if(priority === 'shedding' || (priority === 'scalp' && approach === 'deep')) key = 'hair_root_revival';
+    else if(priority === 'repair') key = 'hair_velvet_repair';
+    else if(priority === 'scalp') key = 'hair_scalp_reset';
+    else key = 'hair_polish_protocol';
+  }
+
+  if(lane === 'skin'){
+    if(priority === 'clarity') key = 'skin_clarity_code';
+    else if(priority === 'bright') key = 'skin_luminous_repair';
+    else if(priority === 'barrier') key = 'skin_barrier_rescue';
+    else key = 'skin_event_polish';
+  }
+
+  if(lane === 'body'){
+    if(priority === 'desk') key = 'body_desk_release';
+    else if(priority === 'stress') key = 'body_nervous_reset';
+    else if(priority === 'release') key = 'body_deep_release';
+    else key = 'body_energy_reboot';
+  }
+
+  const baseProfile = PROFILES[key];
+  const approachNote = getApproachNote(approach);
+  const cadenceNote = getCadenceNote(cadence);
+  const sessionNote = getSessionNote(session);
+
+  state.profile = {
+    ...baseProfile,
+    key,
+    diagnosis: `${baseProfile.diagnosis} ${approachNote} ${cadenceNote} ${sessionNote}`.trim()
+  };
+}
+
+function getApproachNote(value){
+  if(value === 'fast') return 'Because you leaned toward faster change, this route stays tighter and more results-driven from the first session.';
+  if(value === 'gentle') return 'Because you asked for a gentler feel, the route avoids unnecessary intensity while still keeping progress visible.';
+  if(value === 'ritual') return 'Because experience matters to you, the route keeps the treatment feel elevated rather than purely utilitarian.';
+  return 'Because you are open to deeper work, the route gives more room to technical or stronger treatments where they make sense.';
+}
+
+function getCadenceNote(value){
+  if(value === 'single') return 'The first plan is anchored around one strong reset rather than assuming a long-term course straight away.';
+  if(value === 'monthly') return 'The recommendation also makes sense as a monthly ritual, so the plan does not rely on unrealistically frequent visits.';
+  if(value === 'routine') return 'Since you are open to a proper routine, the route is built to compound with repeated sessions rather than act as a one-off.';
+  return 'Because you want the smartest fast path, the route is biased toward quicker visible movement from the beginning.';
+}
+
+function getSessionNote(value){
+  if(value === 'express') return 'That is why the first recommendation stays efficient and easier to fit into a busy week.';
+  if(value === 'signature') return 'That makes the signature-length appointment the strongest first move for balance and visible payoff.';
+  return 'That also lets the plan lean into more immersive sessions where deeper correction or fuller restoration can actually happen.';
+}
+
+function analyze(){
+  show('screen-analyzing');
+  const steps = [
+    'Reading your selections...',
+    'Mapping the strongest service direction...',
+    'Balancing mood, cadence, and session size...',
+    'Almost ready - assembling your concierge route.'
+  ];
+  let i = 0;
+  const stepEl = document.getElementById('analyzingStep');
+  stepEl.textContent = steps[0];
+  const interval = setInterval(() => {
+    i++;
+    if(i < steps.length){
+      stepEl.textContent = steps[i];
+    } else {
+      clearInterval(interval);
+      renderPreview();
+      show('screen-preview');
+    }
+  }, 550);
+}
+
+function buildRouteChips(){
+  return QUESTIONS
+    .map(question => state.answers[question.key]?.label)
+    .filter(Boolean)
+    .map(label => `<span class="path-chip active">${label}</span>`)
+    .join('');
+}
+
+function renderPreview(){
+  document.getElementById('submitBtn').innerHTML = 'Unlock my plan + 30% off <span class="btn-accent">&rarr;</span>';
+}
+
+function submitLead(){
+  const nameEl = document.getElementById('nameInput');
+  const phoneEl = document.getElementById('phoneInput');
+  const name = nameEl.value.trim();
+  const phone = phoneEl.value.trim();
+
+  let ok = true;
+  nameEl.classList.remove('error');
+  phoneEl.classList.remove('error');
+
+  if(name.length < 2){
+    nameEl.classList.add('error');
+    ok = false;
+  }
+  if(!/^[6-9]\d{9}$/.test(phone)){
+    phoneEl.classList.add('error');
+    ok = false;
+  }
+
+  if(!ok){
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = 'Please check your details';
+    setTimeout(() => {
+      btn.innerHTML = 'Unlock my plan + 30% off <span class="btn-accent">&rarr;</span>';
+    }, 1600);
+    return;
+  }
+
+  state.user.name = name;
+  state.user.phone = phone;
+  state.coupon = generateCoupon();
+
+  renderFullResult();
+  show('screen-result');
+  startCountdown();
+}
+
+function generateCoupon(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let suffix = '';
+  for(let i = 0; i < 4; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+  return 'ROUTE30' + suffix;
+}
+
+function renderFullResult(){
+  const firstName = state.user.name.split(' ')[0];
+  document.getElementById('userNameOut').textContent = firstName;
+  document.getElementById('resultDate').textContent =
+    'Concierge route | ' + new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  document.getElementById('profileNameFull').innerHTML = state.profile.name;
+  document.getElementById('profileTaglineFull').textContent = state.profile.tagline;
+  document.getElementById('routeSummaryFull').innerHTML = buildRouteChips();
+  document.getElementById('diagnosisText').textContent = state.profile.diagnosis;
+
+  const list = document.getElementById('servicesList');
+  list.innerHTML = state.profile.services.map(serviceId => {
+    const service = SERVICES[serviceId];
+    return `
+      <div class="service raised">
+        <div class="sv-ico">${service.ico}</div>
+        <div>
+          <h4>${service.name}</h4>
+          <p>${service.desc}</p>
+          <span class="price">${service.price}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('couponCode').textContent = state.coupon;
+}
+
+function startCountdown(){
+  const end = Date.now() + 48 * 60 * 60 * 1000;
+  const el = document.getElementById('countdown');
+  function tick(){
+    const diff = end - Date.now();
+    if(diff <= 0){
+      el.textContent = 'Expired';
+      return;
+    }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = `${h}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+function copyCoupon(){
+  navigator.clipboard?.writeText(state.coupon);
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = 'Copied';
+  btn.classList.add('done');
+  setTimeout(() => {
+    btn.textContent = 'Copy';
+    btn.classList.remove('done');
+  }, 1800);
+}
+
+function openWhatsApp(){
+  const salonNumber = '919999999999';
+  const firstName = state.user.name.split(' ')[0];
+  const profileClean = state.profile.name.replace(/<[^>]+>/g, '');
+  const serviceNames = state.profile.services.map(serviceId => SERVICES[serviceId].name).join(', ');
+  const msg = `Hi Crown and Comb! I'm ${firstName}. I just completed the concierge flow and got matched with *${profileClean}*. My recommended services are ${serviceNames}. My offer code is *${state.coupon}*. I would like to book - what time slots are available this week?`;
+  const url = `https://wa.me/${salonNumber}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+function shareResult(){
+  const profileClean = state.profile.name.replace(/<[^>]+>/g, '');
+  const text = `I just tried this beauty and wellness concierge flow - I got matched with ${profileClean}. You get 30% off too.`;
+  if(navigator.share){
+    navigator.share({ title: 'Crown and Comb Concierge Flow', text, url: window.location.href });
+  } else {
+    navigator.clipboard?.writeText(window.location.href + '\n\n' + text);
+    const note = document.querySelector('.share-note a');
+    const original = note.textContent;
+    note.textContent = 'Link copied';
+    setTimeout(() => {
+      note.textContent = original;
+    }, 2000);
+  }
+}
+
+function escapeAttr(value){
+  return String(value).replace(/'/g, "\\'");
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const phone = document.getElementById('phoneInput');
+  phone?.addEventListener('input', event => {
+    event.target.value = event.target.value.replace(/\D/g, '').slice(0, 10);
+  });
+});
+</script>
+
+</body>
+</html>
